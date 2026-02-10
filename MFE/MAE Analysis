@@ -1,0 +1,35 @@
+def find_the_cliff(df): (We want to trade every month to capitalise on every opportunity, so we chose not to limit our selves at a high Z count)
+    print("🔍 Testing the 'Stress Cliff' to maximize trade volume...")
+    
+    # Keep the Jump high (where the edge was 1.31)
+    jump_limit = df['returns'].std() * 2.0
+    
+    results = []
+    # Scan from 2.0 down to 0.2
+    for s_thresh in [2.0, 1.5, 1.25, 1.0, 0.75, 0.5, 0.25]:
+        signals = df[
+            (df['returns'] > jump_limit) & 
+            (df['math_stress_z'] > s_thresh) & 
+            (df['specialist_state'] == 1)
+        ]
+        
+        if len(signals) < 10: continue
+        
+        excursions = []
+        for idx in signals.index:
+            w = df.loc[idx : idx + pd.Timedelta(minutes=15), 'S']
+            if len(w) < 5: continue
+            entry = w.iloc[0]
+            mfe_down = (entry - w.min()) / entry 
+            mae_up = (w.max() - entry) / entry
+            excursions.append({'mfe_down': mfe_down, 'mae_up': mae_up})
+            
+        tmp_df = pd.DataFrame(excursions)
+        er = tmp_df['mfe_down'].mean() / tmp_df['mae_up'].mean()
+        wr = (tmp_df['mfe_down'] > tmp_df['mae_up']).mean()
+        results.append({'Stress_Z': s_thresh, 'Count': len(signals), 'ER': er, 'WR': wr})
+    
+    return pd.DataFrame(results)
+
+cliff_report = find_the_cliff(df)
+print(cliff_report)
