@@ -26,4 +26,4 @@ The final engine was subjected to a full-year out sample backtest audit for 2025
 - Yearly Return: 204.8%
 - Max Total Drawdown: 15.07%
 
-  Note: "Due to the proprietary nature and significant size of the SPY microstructure dataset (26GB), the raw Parquet files are excluded. This repository includes a Synthetic Regime Generator that mimics the statistical properties of the original 'Artificial Spot Price.' This allows the full Bulletproof Execution Engine and Prop Firm Audit to be validated by the user."
+  Note: "Due to the proprietary nature and significant size of the SPY microstructure dataset (26GB), the raw Parquet files are excluded. This repository includes a Synthetic Regime Generator that mimics the statistical properties of the original 'Artificial Spot Price.' This allows the full Bulletproof Execution Engine Audit to be validated by the user." This requires to define DF, as the Synthetic Regime Generator.
