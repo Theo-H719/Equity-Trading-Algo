@@ -18,8 +18,8 @@ Institutional Risk Management: To meet strict risk requirements ($5k daily limit
 - Final Performance Audit
 The final engine was subjected to a full-year out sample backtest audit for 2025 (including blackswan events):
 
-Daily Compliance: Passed with zero $5k daily breaches.
-Overall RR Ratio:  3.04
-Avg Win: 3.28% | Avg Loss: 1.08%
-Yearly Return: 204.8%
-Max Total Drawdown: 15.07%
+- Daily Compliance: Passed with zero $5k daily breaches.
+- Overall RR Ratio:  3.04
+- Avg Win: 3.28% | Avg Loss: 1.08%
+- Yearly Return: 204.8%
+- Max Total Drawdown: 15.07%
