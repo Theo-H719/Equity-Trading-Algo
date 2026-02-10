@@ -1,0 +1,68 @@
+def run_bulletproof_single_shot(df, leverage=20):
+    print(f"Initializing Bulletproof Engine (3-Loss Daily Limit)...")
+    
+    # 1. Rolling 24h Volatility for regime stability
+    df['rolling_std'] = df['returns'].rolling(window=17280).std()
+    
+    trades = []
+    cool_down_until = pd.Timestamp.min.tz_localize('UTC')
+    
+    # Track daily losses to prevent account breach
+    daily_loss_count = {}
+    
+    for idx, row in df.iterrows():
+        # A. DAILY CIRCUIT BREAKER
+        current_day = idx.date()
+        if current_day not in daily_loss_count:
+            daily_loss_count[current_day] = 0
+            
+        # If we hit 3 losses today, skip all further trades for today
+        if daily_loss_count[current_day] >= 3:
+            continue
+            
+        # B. ANTI-LAYERING LOCKOUT
+        if idx < cool_down_until:
+            continue
+            
+        # C. DYNAMIC SIGNAL DETECTION
+        dynamic_limit = row['rolling_std'] * 3.0
+        is_short = (row['specialist_state'] == 1) and (row['returns'] > dynamic_limit) and (row['math_stress_z'] > 0.5)
+        is_long = (row['specialist_state'] == 3) and (row['returns'] > dynamic_limit)
+        
+        if is_short or is_long:
+            trade_end_time = idx + pd.Timedelta(minutes=15)
+            w = df.loc[idx : trade_end_time, 'S']
+            
+            if len(w) < 5: continue
+            
+            entry = w.iloc[0]
+            
+            # D. EXECUTION WITH MANDATORY 0.05% STOP
+            if is_long:
+                # If price drops 0.05% below entry, we are stopped
+                pnl = -0.0005 if (entry - w.min())/entry > 0.0005 else (w.iloc[-1] - entry)/entry
+            else: # is_short
+                # If price rises 0.05% above entry, we are stopped
+                pnl = -0.0005 if (w.max() - entry)/entry > 0.0005 else (entry - w.iloc[-1])/entry
+            
+            # E. UPDATE DAILY LOSS COUNTER
+            # We count it as a 'Hard Loss' if it hit the stop level
+            if pnl <= -0.0005:
+                daily_loss_count[current_day] += 1
+            
+            trades.append({
+                'entry_time': idx,
+                'exit_time': trade_end_time,
+                'type': 'LONG' if is_long else 'SHORT',
+                'pnl': (pnl - 0.0001) * leverage
+            })
+            
+            # Lock the engine until this trade is finished
+            cool_down_until = trade_end_time
+
+    trades_df = pd.DataFrame(trades).set_index('entry_time')
+    return trades_df
+
+# RUN THE FINAL SYSTEM
+# Using 20x leverage: 3 losses = 4.5% drawdown ($4,500)
+bulletproof_results = run_bulletproof_single_shot(df, leverage=20)
