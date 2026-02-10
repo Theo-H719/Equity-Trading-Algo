@@ -22,7 +22,7 @@ def calculate_short_alpha(df):
         results.append({'mfe_down': mfe_down, 'mae_up': mae_up})
         
     res_df = pd.DataFrame(results)
-    print(f"📉 HMM-FILTERED SHORT RESULTS:")
+    print(f" HMM-FILTERED SHORT RESULTS:")
     print(f"Signals: {len(res_df)}")
     print(f"Edge Ratio (Short): {res_df['mfe_down'].mean() / res_df['mae_up'].mean():.2f}")
     print(f"Win Rate (Short): {(res_df['mfe_down'] > res_df['mae_up']).mean():.2%}")
