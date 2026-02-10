@@ -1,5 +1,5 @@
-def find_the_cliff(df): (We want to trade every month to capitalise on every opportunity, so we chose not to limit our selves at a high Z count)
-    print("🔍 Testing the 'Stress Cliff' to maximize trade volume...")
+def find_the_cliff(df): 
+    print(" Testing the 'Stress Cliff' to maximize trade volume...")
     
     # Keep the Jump high (where the edge was 1.31)
     jump_limit = df['returns'].std() * 2.0
