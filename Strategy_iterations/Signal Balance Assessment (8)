@@ -1,0 +1,48 @@
+import matplotlib.pyplot as plt 
+
+def simulate_equity_curve(df, risk_per_trade=0.01):
+    # 1. Identify the 'Gold Standard' 78 signals
+    jump_limit = df['returns'].std() * 2.0
+    signals = df[
+        (df['returns'] > jump_limit) & 
+        (df['math_stress_z'] > 0.50) & 
+        (df['specialist_state'] == 1)
+    ].copy()
+    
+    # 2. Calculate the Trade PnL (Shorting the Jump)
+    # We use the 20-minute exit we found earlier
+    trade_results = []
+    for idx in signals.index:
+        end_time = idx + pd.Timedelta(minutes=20)
+        window = df.loc[idx : end_time, 'S']
+        if len(window) < 2: continue
+        
+        # PnL = (Entry - Exit) / Entry
+        entry = window.iloc[0]
+        exit_val = window.iloc[-1]
+        pnl = (entry - exit_val) / entry
+        trade_results.append(pnl)
+    
+    # 3. Create the Equity Curve
+    # We multiply by a 'leverage factor' or 'risk factor' 
+    # to see how a $10,000 account would grow
+    pnl_series = pd.Series(trade_results)
+    cumulative_returns = (1 + pnl_series).cumprod()
+    
+    # 4. Plotting
+    plt.figure(figsize=(10, 6))
+    plt.plot(cumulative_returns.values, label='Strategy Growth (20m Hold)')
+    plt.title('Equity Curve: The High-Stress Fade Strategy')
+    plt.xlabel('Trade Number')
+    plt.ylabel('Account Multiplier')
+    plt.grid(True)
+    plt.show()
+    
+    print(f" SIMULATION SUMMARY:")
+    print(f"Total Trades: {len(pnl_series)}")
+    print(f"Final Account Multiplier: {cumulative_returns.iloc[-1]:.2f}x")
+    print(f"Max Drawdown: {(1 - cumulative_returns / cumulative_returns.cummax()).max():.2%}")
+    
+    return cumulative_returns
+
+equity_curve = simulate_equity_curve(df)
