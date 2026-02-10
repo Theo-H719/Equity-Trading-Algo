@@ -1,4 +1,4 @@
-# 3. Train the new model 
+# 3. Train the new model, though not needed since the pkl files are given.
 print(" Training Specialist Model (4 States, Full Covariance)...")
 specialist_model = GaussianHMM(
     n_components=4, 
