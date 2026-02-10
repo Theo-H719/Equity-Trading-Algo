@@ -1,0 +1,70 @@
+import pandas as pd 
+import numpy as np
+
+def audit_performance(trades_df, initial_balance=100000, daily_limit=5000, total_limit=10000):
+    # 1. Basic Cleaning
+    df = trades_df.copy()
+    df.index = pd.to_datetime(df.index)
+    df['month'] = df.index.to_period('M')
+    df['day'] = df.index.date
+    df['is_win'] = df['pnl'] > 0
+    
+    # 2. Equity and High-Water Mark Calculations
+    df['dollar_pnl'] = df['pnl'] * initial_balance
+    df['equity_curve'] = initial_balance + df['dollar_pnl'].cumsum()
+    df['hwm'] = df['equity_curve'].cummax()
+    df['drawdown_from_peak'] = df['hwm'] - df['equity_curve']
+    
+    # 3. Monthly Stats
+    monthly_stats = df.groupby('month').agg(
+        Total_Trades=('pnl', 'count'),
+        Wins=('is_win', 'sum'),
+        Losses=('is_win', lambda x: len(x) - x.sum()),
+        Monthly_Return_Pct=('pnl', lambda x: (x.sum() * 100))
+    )
+    monthly_stats['Win_Rate'] = (monthly_stats['Wins'] / monthly_stats['Total_Trades'] * 100).round(2)
+    
+    # 4. Risk-to-Reward (RR)
+    avg_win = df[df['pnl'] > 0]['pnl'].mean()
+    avg_loss = abs(df[df['pnl'] < 0]['pnl'].mean())
+    rr_ratio = avg_win / avg_loss if avg_loss != 0 else 0
+    
+    # 5. Compliance Checks
+    daily_pnl = df.groupby('day')['dollar_pnl'].sum()
+    worst_day_dollar = daily_pnl.min()
+    daily_breaches = daily_pnl[daily_pnl <= -daily_limit]
+    
+    max_total_dd = df['drawdown_from_peak'].max()
+    total_breaches = df[df['drawdown_from_peak'] >= total_limit]
+    
+    # --- PRINTING THE COMPREHENSIVE AUDIT ---
+    print(" --- AUDIT ---")
+    print(f"Starting Balance:  ${initial_balance:,}")
+    print(f"Final Balance:     ${df['equity_curve'].iloc[-1]:,.2f}")
+    print(f"Peak Account Val:  ${df['hwm'].max():,.2f}")
+    print(f"Overall RR Ratio:  {rr_ratio:.2f}")
+    print(f"Avg Win: {avg_win*100:.2f}% | Avg Loss: {avg_loss*100:.2f}%")
+    print("-" * 45)
+    
+    print("\n MONTHLY BREAKDOWN:")
+    print(monthly_stats[['Total_Trades', 'Wins', 'Losses', 'Win_Rate', 'Monthly_Return_Pct']])
+    
+    print("\n COMPLIANCE & RISK CHECK:")
+    # Daily Limit Check
+    print(f"Worst Daily PnL:   ${worst_day_dollar:,.2f}")
+    if len(daily_breaches) > 0:
+        print(f"DAILY BREACH: Account failed on {len(daily_breaches)} days!")
+    else:
+        print("DAILY COMPLIANT: No $5k daily limits hit.")
+        
+    # Total Limit Check
+    print(f"Max Total DD:      ${max_total_dd:,.2f} (Limit: ${total_limit:,})")
+    if not total_breaches.empty:
+        print(f"TOTAL BREACH: Account hit max drawdown limit of ${total_limit}!")
+    else:
+        print(f"TOTAL COMPLIANT: Maximum dip from peak was ${max_total_dd:,.2f}.")
+        
+    return monthly_stats
+
+# Run the final audit
+audit_report = audit_performance(bulletproof_results)
