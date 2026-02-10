@@ -23,7 +23,7 @@ def calculate_lead_lag_edge(df, threshold_std=2):
     edge_df = pd.DataFrame(results)
     edge_ratio = edge_df['mfe'].mean() / edge_df['mae'].mean()
     
-    print(f"🎯 LEAD-LAG EDGE RESULTS:")
+    print(f" LEAD-LAG EDGE RESULTS:")
     print(f"Signals Found: {len(edge_df)}")
     print(f"Average MFE: {edge_df['mfe'].mean():.6%}")
     print(f"Average MAE: {edge_df['mae'].mean():.6%}")
