@@ -1,1 +1,45 @@
+Step 1: News Masking & Data Sanitization
+Note: We begin by excluding "Noise" events (FOMC, CPI, NFP) to ensure our alpha isn't just gambling on binary outcomes.
 
+
+# Logic: Timezone-aware masking for high-impact economic releases.
+Step 2: State Performance Profiling (6-State Model)
+Note: Our initial HMM identified 6 regimes. We analyzed them to see which ones offered a structural edge.
+
+
+# Logic: Profiling Avg_Return and Win_Rate across normal market flow.
+Step 3: Refinement to the 4-State Specialist Model
+Note: Because the 6-state model was too noisy, we collapsed the logic into a "Specialist Model" focused on high-conviction stress states.
+
+# Logic: Retraining HMM with 'Full' covariance to capture specialist imbalances.
+Step 4: Lead-Lag Alpha Discovery
+Note: We hypothesized that a jump in price would lead to further momentum. We tested the MFE/MAE to find our initial "Edge Ratio."
+
+
+# Logic: Testing 2-STD jumps for 15-minute follow-through.
+Step 5: The Failure of Long Momentum
+Note: To our dismay, the standard "Jump" logic was insufficient for Longs in high-volatility environments. We began exploring "Short Alpha."
+
+
+# Logic: Realizing the "Lead" wasn't as strong as the "Stress."
+Step 6: Engineering the "Short Alpha" Fade
+Note: We reversed our logic. Instead of following the jump, we used State 1 + Math Stress to "fade" overextended moves.
+
+# Logic: Using Z-Score > 0.5 to identify high-probability reversal points.
+Step 7: Identifying the "Stress Cliff"
+Note: We tested different Z-Score thresholds to find the "Cliff"—the exact point where trade volume meets high edge.
+
+
+# Logic: Scanning Stress Z from 2.0 down to 0.25.
+Step 8: Visualizing the Initial Equity Path
+Note: We simulated our first equity curve. It looked promising but revealed a dangerous drawdown of ~2.42% on raw data.
+
+
+# Logic: Plotting the High-Stress Fade Strategy performance.
+Step 9: The "Bulletproof" Risk Engine
+Note: This is the critical transition. We added a 3-loss daily circuit breaker and a 15-minute lockout to satisfy Prop Firm rules.
+
+
+# Logic: Single-shot execution with mandatory 0.05% Hard Stops.
+Step 10: The Prop Firm Audit & Final Result
+Note: The final verification. We run a full-year audit to check for daily breaches and total drawdown compliance.
