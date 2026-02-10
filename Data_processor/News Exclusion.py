@@ -1,4 +1,4 @@
-import pandas as pd   (We do not want to trade news, so we exclude 3 specific events)
+import pandas as pd 
 from datetime import timedelta
 
 # 1. THE NEWS CALENDAR
