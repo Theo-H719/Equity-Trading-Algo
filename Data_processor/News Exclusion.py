@@ -39,7 +39,7 @@ def code_step_1_masking(df, event_list):
 # ==========================================
 # USAGE
 # ==========================================
-df = pd.read_parquet('/content/drive/MyDrive/MATH_SIGNALS_FULL_YEAR.parquet') 
+df = pd.read_parquet('/MATH_SIGNALS_FULL_YEAR.parquet') #switch to the signal generator
 df = code_step_1_masking(df, news_events)
 
 # Verification
