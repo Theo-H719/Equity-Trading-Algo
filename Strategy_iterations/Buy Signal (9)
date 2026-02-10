@@ -1,0 +1,47 @@
+def test_state3_velocity(df): 
+    print("Testing State 3 with Velocity Trigger...")
+    
+    # 1. Standard State 3 + Jump
+    jump_limit = df['returns'].std() * 2.0
+    
+    # 2. VELOCITY: The current return must be higher than the 5-bar average return
+    # This ensures we aren't buying a 'stalling' breakout
+    df['ret_ma'] = df['returns'].rolling(5).mean()
+    
+    signals = df[
+        (df['specialist_state'] == 3) & 
+        (df['returns'] > jump_limit) & 
+        (df['returns'] > df['ret_ma']) & # Velocity check
+        (df['math_stress_z'] < 0.3)      # Sanity check
+    ]
+    
+    results = []
+    for idx in signals.index:
+        # Use a Trailing Stop logic: Exit at 15 mins OR if price drops 0.05%
+        w = df.loc[idx : idx + pd.Timedelta(minutes=15), 'S']
+        if len(w) < 2: continue
+        entry = w.iloc[0]
+        exit_val = w.iloc[-1]
+        
+        # Check if we got stopped out early (Protects Drawdown)
+        low_point = w.min()
+        if (entry - low_point) / entry > 0.0005: # 0.05% Stop Loss
+            pnl = -0.0005
+        else:
+            pnl = (exit_val - entry) / entry
+            
+        results.append({'pnl': pnl})
+        
+    res_df = pd.DataFrame(results)
+    if res_df.empty: return "No signals."
+    
+    res_df['cum_pnl'] = (1 + res_df['pnl']).cumprod()
+    dd = (1 - res_df['cum_pnl'] / res_df['cum_pnl'].cummax()).max()
+    
+    print(f"VELOCITY-TRIGGERED STATE 3:")
+    print(f"Signals: {len(res_df)}")
+    print(f"Edge Ratio: {res_df[res_df['pnl']>0]['pnl'].mean() / abs(res_df[res_df['pnl']<0]['pnl'].mean()):.2f}")
+    print(f"Final Multiplier: {res_df['cum_pnl'].iloc[-1]:.2f}x")
+    print(f"Max Drawdown: {dd:.2%}")
+
+test_state3_velocity(df)
