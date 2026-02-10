@@ -1,0 +1,35 @@
+def calculate_lead_lag_edge(df, threshold_std=2): 
+    # 1. Define the 'Shock': How much did S jump in the last 1 minute?
+    df['s_jump'] = df['returns'] 
+    
+    # 2. Define the 'Lead': When the jump is 2 Standard Deviations above normal
+    jump_threshold = df['s_jump'].std() * threshold_std
+    
+    # 3. Signals: Moments where S jumped significantly
+    signals = df[(df['s_jump'] > jump_threshold) & (df['is_news_noise'] == False)]
+    
+    # 4. Calculate MFE/MAE for the next 15 minutes
+    results = []
+    for idx in signals.index:
+        # Get the window of S for the next 15 mins
+        future_window = df.loc[idx : idx + pd.Timedelta(minutes=15), 'S']
+        if len(future_window) < 5: continue
+        
+        entry_price = future_window.iloc[0]
+        mfe = (future_window.max() - entry_price) / entry_price
+        mae = (entry_price - future_window.min()) / entry_price
+        results.append({'mfe': mfe, 'mae': mae})
+    
+    edge_df = pd.DataFrame(results)
+    edge_ratio = edge_df['mfe'].mean() / edge_df['mae'].mean()
+    
+    print(f"🎯 LEAD-LAG EDGE RESULTS:")
+    print(f"Signals Found: {len(edge_df)}")
+    print(f"Average MFE: {edge_df['mfe'].mean():.6%}")
+    print(f"Average MAE: {edge_df['mae'].mean():.6%}")
+    print(f"Edge Ratio (Expected > 1.2): {edge_ratio:.2f}")
+    
+    return edge_df
+
+# EXECUTION
+edge_results = calculate_lead_lag_edge(df
