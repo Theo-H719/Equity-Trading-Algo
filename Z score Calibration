@@ -1,0 +1,30 @@
+def calculate_short_alpha(df):
+    # 1. Identify the 'Overextended' Signal
+    jump_threshold = df['returns'].std() * 2
+    
+    # 2. Filter: High Jump + High Stress + HMM 'Dead' State
+    # We are looking for moments where S jumps but the HMM says we are in the 'Noise' state (5)
+    short_signals = df[
+        (df['returns'] > jump_threshold) & 
+        (df['math_stress_z'] > 0.5) & 
+        (df['specialist_state'] == 1) # Using your 'Mega-State' from the specialist model
+    ]
+    
+    results = []
+    for idx in short_signals.index[:2000]:
+        window = df.loc[idx : idx + pd.Timedelta(minutes=15), 'S']
+        if len(window) < 5: continue
+        
+        entry = window.iloc[0]
+        # Profit from the Drop (MFE Down)
+        mfe_down = (entry - window.min()) / entry 
+        mae_up = (window.max() - entry) / entry
+        results.append({'mfe_down': mfe_down, 'mae_up': mae_up})
+        
+    res_df = pd.DataFrame(results)
+    print(f"📉 HMM-FILTERED SHORT RESULTS:")
+    print(f"Signals: {len(res_df)}")
+    print(f"Edge Ratio (Short): {res_df['mfe_down'].mean() / res_df['mae_up'].mean():.2f}")
+    print(f"Win Rate (Short): {(res_df['mfe_down'] > res_df['mae_up']).mean():.2%}")
+
+calculate_short_alpha(df)
