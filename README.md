@@ -7,7 +7,7 @@ This project implements a Hidden Markov Model (HMM) strategy designed to harvest
 - The Development Journey
 The project followed a multi-stage evolution from raw anomaly detection to a risk-hardened execution engine. Paid Option Data was used from DataBento, for the year 2024, to use as an in sample:
 
-(note): The option data did not have a spot price, and therefore before starting, the project required coding a synthetic spot price, calculating the log return (log(St/St-1) and percentage changes in average spread, to then discount it, to create S. This was done because buying another variant of a data set for two years was expensive and inefficient.
+(note): The option data did not have a spot price, and therefore before starting, the project required coding a synthetic spot price, calculating the log return (log(St/St-1) and percentage changes in average spread, to then discount it, to create S. This was done because buying another variant data set for two years was expensive and inefficient.
 
 Data Sanitization (News Masking): We implemented a timezone-aware masking system to exclude trading during high-impact news events (FOMC, CPI, NFP), ensuring strategy returns are based on structural market stress rather than event-driven binary noise.
 
