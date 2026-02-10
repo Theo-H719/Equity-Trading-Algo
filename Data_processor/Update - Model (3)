@@ -1,5 +1,5 @@
 # 3. Train the new model 
-print("🎯 Training Specialist Model (4 States, Full Covariance)...")
+print(" Training Specialist Model (4 States, Full Covariance)...")
 specialist_model = GaussianHMM(
     n_components=4, 
     covariance_type="full", 
@@ -11,4 +11,4 @@ specialist_model.fit(X_scaled)
 # 4. Save the new tools
 joblib.dump(specialist_model, 'specialist_hmm_model.pkl')
 joblib.dump(scaler, 'specialist_scaler.pkl')
-print("✅ New Model and Scaler Saved.")
+print(" New Model and Scaler Saved.")
